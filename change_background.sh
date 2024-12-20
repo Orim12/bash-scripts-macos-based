@@ -9,7 +9,7 @@ if [ "$permission" != "y" ]; then
 fi
 
 # Download the image
-image_url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTp1ragbkK9hB77RPraPErKgBT7wHNjOhMkXyx_jXUf4WVSHs7NKcVqU1zIVDDQaMQzG8s&usqp=CAU"
+image_url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSE8cZ0k4RT0dXX0Osguqq7QGWWAxICwhtmHw&s"
 image_path="$HOME/Downloads/background.jpg"
 curl -o "$image_path" "$image_url"
 
