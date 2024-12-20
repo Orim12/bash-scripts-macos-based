@@ -8,39 +8,54 @@ set_background() {
     osascript -e "tell application \"System Events\" to set picture of every desktop to POSIX file \"$image_path\""
 }
 
-# Download de afbeelding naar een tijdelijke locatie
-TEMP_FILE="/tmp/macos_new_background.jpg"
-IMAGE_URL="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTp1ragbkK9hB77RPraPErKgBT7wHNjOhMkXyx_jXUf4WVSHs7NKcVqU1zIVDDQaMQzG8s&usqp=CAU"
-
-echo "De afbeelding wordt gedownload vanaf: $IMAGE_URL"
-curl -o "$TEMP_FILE" "$IMAGE_URL" --fail
-if [ $? -ne 0 ]; then
-    echo "Fout: Kon de afbeelding niet downloaden. Controleer de URL."
+# Controleer of er voldoende argumenten zijn
+if [ "$#" -lt 2 ]; then
+    echo "Gebruik: $0 <url-of-pad-naar-afbeelding> <Y/N>"
     exit 1
 fi
 
-# Toon de afbeelding voor goedkeuring
-echo "De afbeelding wordt geopend ter preview. Bevestig of je deze wilt gebruiken."
-open "$TEMP_FILE"
+INPUT="$1"
+APPROVAL="$2"
+TEMP_FILE="/tmp/macos_new_background.jpg"
 
-# Vraag om goedkeuring van de gebruiker
-while true; do
-    read -p "Wil je deze afbeelding instellen als bureaubladachtergrond? (Y/N): " RESPONSE
-    case "$RESPONSE" in
-        Y)
-            set_background "$TEMP_FILE"
-            echo "Bureaubladachtergrond is succesvol bijgewerkt!"
-            break
-            ;;
-        N)
-            echo "Bewerking geannuleerd. De achtergrond is niet gewijzigd."
-            break
-            ;;
-        *)
-            echo "Ongeldige invoer. Typ 'Y' voor ja of 'N' voor nee."
-            ;;
-    esac
-done
+# Controleer of goedkeuring geldig is
+if [[ "$APPROVAL" != "Y" && "$APPROVAL" != "N" ]]; then
+    echo "Fout: Alleen 'Y' of 'N' is toegestaan als tweede parameter."
+    exit 1
+fi
 
-# Verwijder tijdelijke bestanden
-rm "$TEMP_FILE"
+# Controleer of het een URL is en download indien nodig
+if [[ "$INPUT" =~ ^https?:// ]]; then
+    echo "De afbeelding wordt gedownload vanaf: $INPUT"
+    
+    curl -o "$TEMP_FILE" "$INPUT" --fail
+    if [ $? -ne 0 ]; then
+        echo "Fout: Kon de afbeelding niet downloaden. Controleer de URL."
+        exit 1
+    fi
+
+    IMAGE_PATH="$TEMP_FILE"
+else
+    # Controleer of het een lokaal bestand is
+    if [ ! -f "$INPUT" ]; then
+        echo "Fout: Bestand '$INPUT' bestaat niet."
+        exit 1
+    fi
+
+    IMAGE_PATH="$INPUT"
+fi
+
+# Stel de achtergrond in of annuleer op basis van goedkeuring
+if [ "$APPROVAL" == "Y" ]; then
+    set_background "$IMAGE_PATH"
+    echo "Bureaubladachtergrond is succesvol bijgewerkt!"
+else
+    echo "Bewerking geannuleerd. De achtergrond is niet gewijzigd."
+fi
+
+# Verwijder tijdelijke bestanden indien nodig
+if [ "$IMAGE_PATH" == "$TEMP_FILE" ]; then
+    rm "$TEMP_FILE"
+fi
+
+exit 0
