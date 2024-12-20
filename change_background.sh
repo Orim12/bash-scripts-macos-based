@@ -4,7 +4,8 @@
 set_background() {
     local image_path="$1"
 
-    # Gebruik AppleScript om de desktopachtergrond in te stellen
+    # Controleer of de gebruiker toestemming moet geven
+    echo "Toestemming kan nodig zijn om de achtergrond te wijzigen."
     osascript -e "tell application \"System Events\" to set picture of every desktop to POSIX file \"$image_path\""
 }
 
