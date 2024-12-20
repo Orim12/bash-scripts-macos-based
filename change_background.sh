@@ -3,10 +3,16 @@
 # Functie om de achtergrond in te stellen
 set_background() {
     local image_path="$1"
-
-    # Controleer of de gebruiker toestemming moet geven
-    echo "Toestemming kan nodig zijn om de achtergrond te wijzigen."
+    
+    # AppleScript om de achtergrond in te stellen (macOS 15.1 zou dit nog steeds moeten ondersteunen)
+    echo "Achtergrond wordt ingesteld..."
     osascript -e "tell application \"System Events\" to set picture of every desktop to POSIX file \"$image_path\""
+    
+    if [ $? -eq 0 ]; then
+        echo "Bureaubladachtergrond is succesvol bijgewerkt!"
+    else
+        echo "Fout bij het instellen van de achtergrond. Controleer systeeminstellingen."
+    fi
 }
 
 # Controleer of er voldoende argumenten zijn
@@ -29,12 +35,12 @@ fi
 if [[ "$INPUT" =~ ^https?:// ]]; then
     echo "De afbeelding wordt gedownload vanaf: $INPUT"
     
-    curl -o "$TEMP_FILE" "$INPUT" --fail
+    # Download de afbeelding
+    curl -sSL "$INPUT" -o "$TEMP_FILE"
     if [ $? -ne 0 ]; then
         echo "Fout: Kon de afbeelding niet downloaden. Controleer de URL."
         exit 1
     fi
-
     IMAGE_PATH="$TEMP_FILE"
 else
     # Controleer of het een lokaal bestand is
@@ -42,14 +48,12 @@ else
         echo "Fout: Bestand '$INPUT' bestaat niet."
         exit 1
     fi
-
     IMAGE_PATH="$INPUT"
 fi
 
 # Stel de achtergrond in of annuleer op basis van goedkeuring
 if [ "$APPROVAL" == "Y" ]; then
     set_background "$IMAGE_PATH"
-    echo "Bureaubladachtergrond is succesvol bijgewerkt!"
 else
     echo "Bewerking geannuleerd. De achtergrond is niet gewijzigd."
 fi
